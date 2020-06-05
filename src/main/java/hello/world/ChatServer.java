@@ -9,7 +9,7 @@ import org.reactivestreams.Publisher;
 
 import java.util.function.Predicate;
 
-@ServerWebSocket("/chat/{boardId}/{username}")
+@ServerWebSocket("/chat/{spaceId}/{username}")
 @Controller("/")
 public class ChatServer {
     private WebSocketBroadcaster broadcaster;
@@ -18,37 +18,37 @@ public class ChatServer {
         this.broadcaster = broadcaster;
     }
 
-    @Get("/hello/{boardId}/{username}")
-    public void getDetails(String boardId,
+    @Get("/hello/{spaceId}/{username}")
+    public void getDetails(String spaceId,
                            String username) {
         System.out.println("heyaaaaaaa");
-        broadcaster.broadcastSync("hello everyone - i added a sticky", isValid(boardId));
+        broadcaster.broadcastSync("hello everyone - i added a sticky", isValid(spaceId));
     }
 
     @OnOpen
-    public Publisher<String> onOpen(String boardId, String username, WebSocketSession session) {
+    public Publisher<String> onOpen(String spaceId, String username, WebSocketSession session) {
         session.getOpenSessions();
         String msg = "[" + username + "] Joined!";
-        return broadcaster.broadcast(msg, isValid(boardId));
+        return broadcaster.broadcast(msg, isValid(spaceId));
     }
 
     @OnMessage
     public Publisher<String> onMessage(
-            String boardId,
+            String spaceId,
             String username,
             String message) {
         System.out.println("i am in on Message...lets broadcast something");
         String msg = "[" + username + "] " + message;
-        return broadcaster.broadcast(msg, isValid(boardId));
+        return broadcaster.broadcast(msg, isValid(spaceId));
     }
 
     @OnClose
     public Publisher<String> onClose(
-            String boardId,
+            String spaceId,
             String username,
             WebSocketSession session) {
         String msg = "[" + username + "] Disconnected!";
-        return broadcaster.broadcast(msg, isValid(boardId));
+        return broadcaster.broadcast(msg, isValid(spaceId));
     }
 
     @OnError
@@ -56,12 +56,8 @@ public class ChatServer {
         System.out.println("This resulted in error");
     }
 
-    private Predicate<WebSocketSession> isValid(String boardId) {
-//        System.out.println(boardId.equalsIgnoreCase(s.getUriVariables().get("boardId", String.class, null)));
-        return (WebSocketSession s) -> {
-            System.out.println(s.getUriVariables().names());
-            return boardId.equalsIgnoreCase(s.getUriVariables().get("boardId", String.class, null));
-        };
+    private Predicate<WebSocketSession> isValid(String spaceId) {
+        return s -> spaceId.equalsIgnoreCase(s.getUriVariables().get("spaceId", String.class, null));
     }
 
 }
